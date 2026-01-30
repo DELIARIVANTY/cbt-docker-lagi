@@ -7,10 +7,9 @@ ENV PYTHONUNBUFFERED=1
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies
+# Install dependencies (only minimal needed for python-slim)
+# We rely on PyMySQL instead of mysqlclient to avoid complex build deps
 RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev \
-    build-essential \
     pkg-config \
     python3-cffi \
     python3-brotli \
