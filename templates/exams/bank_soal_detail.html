@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ bank.judul }}{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title">
+                {{ bank.judul }}
+            </h2>
+            <div class="text-secondary mt-1">
+                Mapel: {{ bank.mapel.nama }} | Dibuat: {{ bank.created_at|date:"d M Y" }}
+            </div>
+        </div>
+        <div class="col-auto ms-auto d-print-none">
+            <div class="btn-list">
+                <a href="{% url 'bank_soal_list' %}" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1" />
+                    </svg>
+                    Kembali
+                </a>
+                <a href="{% url 'butir_soal_create' bank.pk %}" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Tambah Manual
+                </a>
+                <a href="{% url 'import_soal' bank.pk %}" class="btn btn-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                        <line x1="12" y1="11" x2="12" y2="17" />
+                        <line x1="9" y1="14" x2="15" y2="14" />
+                    </svg>
+                    Import Excel
+                </a>
+                <a href="{% url 'export_bank_soal' bank.pk %}" class="btn btn-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                        <path d="M12 11v6" />
+                        <path d="M9 14l3 3l3 -3" />
+                    </svg>
+                    Export Excel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table card-table table-vcenter">
+            <thead>
+                <tr>
+                    <th class="w-1">No</th>
+                    <th>Pertanyaan</th>
+                    <th>Kunci</th>
+                    <th>Bobot</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for soal in questions %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        {{ soal.pertanyaan|truncatewords:20 }}
+                        {% if soal.gambar %}
+                        <br><img src="{{ soal.gambar.url }}" alt="Gambar Soal" style="max-height: 50px;">
+                        {% endif %}
+                    </td>
+                    <td>{{ soal.kunci_jawaban }}</td>
+                    <td>{{ soal.bobot }}</td>
+                    <td>
+                        <a href="{% url 'butir_soal_edit' soal.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                        <a href="{% url 'butir_soal_delete' soal.pk %}" class="btn btn-sm btn-danger">Hapus</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">Belum ada butir soal.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

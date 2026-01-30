@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Hapus Butir Soal{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title">
+                Konfirmasi Hapus
+            </h2>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row row-cards">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <p>Apakah Anda yakin ingin menghapus butir soal ini?</p>
+                <blockquote class="blockquote">
+                    <p>{{ soal.pertanyaan|truncatewords:30 }}</p>
+                </blockquote>
+            </div>
+            <div class="card-footer text-end">
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <a href="{% url 'bank_soal_detail' soal.bank_soal.pk %}"
+                        class="btn btn-link link-secondary">Batal</a>
+                    <button type="submit" class="btn btn-danger ms-auto">Ya, Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

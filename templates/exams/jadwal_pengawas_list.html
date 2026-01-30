@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Daftar Jadwal Pengawas</h6>
+        <a href="{% url 'jadwal_pengawas_create' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Tambah Pengawas
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Ujian</th>
+                        <th>Kelas</th>
+                        <th>Pengawas (Guru)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in jadwal_pengawas %}
+                    <tr>
+                        <td class="text-center" style="width: 50px;">{{ forloop.counter }}</td>
+                        <td>{{ item.ujian.nama_ujian }}</td>
+                        <td>{{ item.kelas.nama }}</td>
+                        <td>{{ item.proktor.nama }} ({{ item.proktor.username }})</td>
+                        <td class="text-center" style="width: 150px;">
+                            <a href="{% url 'jadwal_pengawas_edit' item.pk %}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'jadwal_pengawas_delete' item.pk %}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">Belum ada data jadwal pengawas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

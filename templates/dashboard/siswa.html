@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Siswa{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <div class="page-pretitle">
+                Overview
+            </div>
+            <h2 class="page-title">
+                Dashboard Siswa
+            </h2>
+            <div class="text-muted mt-1">
+                Halo, {{ user.nama|default:user.username }} | Kelas: <strong>{{ user.kelas.nama|default:"-" }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row row-cards">
+    <div class="col-12">
+        <h3 class="card-title">Daftar Ujian Tersedia</h3>
+    </div>
+
+    {% if exams %}
+    {% for item in exams %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card card-stacked">
+            <div class="card-status-top {% if item.is_finished %}bg-success{% else %}bg-primary{% endif %}"></div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="avatar me-3 rounded bg-blue-lt">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6" />
+                            <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="card-title mb-0">{{ item.obj.nama_ujian }}</h3>
+                        <div class="text-muted">{{ item.obj.bank_soal.mapel.nama }}</div>
+                    </div>
+                </div>
+
+                <div class="list-group list-group-flush list-group-hoverable">
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-auto"><span class="badge bg-blue">Waktu</span></div>
+                            <div class="col text-truncate">
+                                {{ item.obj.waktu_mulai|date:"d M Y, H:i" }} WIB
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-auto"><span class="badge bg-green">Durasi</span></div>
+                            <div class="col text-truncate">
+                                {{ item.obj.durasi }} Menit
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                {% if item.is_finished %}
+                <button class="btn btn-success w-100" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M5 12l5 5l10 -10" />
+                    </svg>
+                    Selesai Mengerjakan
+                </button>
+                {% else %}
+                {% if item.has_started %}
+                <a href="{% url 'konfirmasi_ujian' item.obj.pk %}" class="btn btn-warning w-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M7 4v16l13 -8z" />
+                    </svg>
+                    Lanjutkan Ujian
+                </a>
+                {% else %}
+                <a href="{% url 'konfirmasi_ujian' item.obj.pk %}" class="btn btn-primary w-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M7 4v16l13 -8z" />
+                    </svg>
+                    Mulai Ujian
+                </a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="col-12">
+        <div class="empty">
+            <div class="empty-img">
+                <img src="{% static 'static/illustrations/undraw_printing_invoices_5r4r.svg' %}" height="128"
+                    alt="No Data">
+            </div>
+            <p class="empty-title">Tidak ada ujian aktif</p>
+            <p class="empty-subtitle text-secondary">
+                Saat ini belum ada jadwal ujian yang tersedia untuk kelas Anda. Silakan hubungi guru jika seharusnya ada
+                ujian.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

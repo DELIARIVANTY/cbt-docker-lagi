@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Konfirmasi Ujian{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title">
+                Konfirmasi Ujian
+            </h2>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-tight py-4">
+    <div class="card card-md">
+        <div class="card-body text-center">
+            <div class="mb-4">
+                <h2 class="card-title">{{ ujian.nama_ujian }}</h2>
+                <div class="text-secondary">
+                    {{ ujian.bank_soal.mapel.nama }} | {{ ujian.semester }}
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-6">
+                    <div class="h3 m-0">{{ ujian.durasi }} Menit</div>
+                    <div class="text-secondary">Durasi</div>
+                </div>
+                <div class="col-6">
+                    <div class="h3 m-0">{{ ujian.bank_soal.questions.count }}</div>
+                    <div class="text-secondary">Jumlah Soal</div>
+                </div>
+            </div>
+
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Masukkan Token Ujian</label>
+                    <input type="text" name="token" class="form-control form-control-lg text-center text-uppercase"
+                        placeholder="TOKEN" required autofocus>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Mulai Kerjakan
+                    </button>
+                </div>
+
+                <div class="mt-3">
+                    <a href="{% url 'siswa_dashboard' %}" class="btn btn-link link-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

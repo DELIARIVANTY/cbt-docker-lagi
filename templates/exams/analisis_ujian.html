@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Analisis Ujian: {{ ujian.nama_ujian }}{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('difficultyChart').getContext('2d');
+
+        fetch('{% url "chart_analisis" ujian.pk %}')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: data.colors,
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                }
+                            }
+                        },
+                        cutout: '70%',
+                    }
+                });
+            });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row g-2 align-items-center mb-4">
+    <div class="col">
+        <h2 class="page-title">
+            Analisis Butir Soal: {{ ujian.nama_ujian }}
+        </h2>
+        <div class="text-muted mt-1">Detail statistik tingkat kesukaran soal berdasarkan jawaban siswa.</div>
+    </div>
+    <div class="col-auto ms-auto">
+        <div class="btn-list">
+            <a href="{% url 'ujian_list' %}" class="btn btn-secondary">Kembali</a>
+            <a href="{% url 'export_nilai_siswa_pdf' ujian.pk %}" class="btn btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                    <path d="M9 15l2 2l4 -4" />
+                </svg>
+                Download Nilai (Rekap)
+            </a>
+            <a href="{% url 'analisis_export' ujian.pk %}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                    <path d="M7 11l5 5l5 -5" />
+                    <path d="M12 4l0 12" />
+                </svg>
+                Download Analisis (Excel)
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cards">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Distribusi Tingkat Kesulitan</h3>
+            </div>
+            <div class="card-body">
+                <div style="height: 250px">
+                    <canvas id="difficultyChart"></canvas>
+                </div>
+                <div class="mt-4">
+                    <h4 class="card-title mb-2">Panduan Indeks (P)</h4>
+                    <p class="text-secondary small">
+                        Indeks kesukaran (P) dihitung dari rasio jawaban benar dibagi total jawaban.
+                    </p>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-green me-2"></span>
+                            <div class="flex-fill">Mudah <small class="text-muted d-block">(P > 0.70)</small></div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-yellow me-2"></span>
+                            <div class="flex-fill">Sedang <small class="text-muted d-block">(0.31 - 0.70)</small></div>
+                        </div>
+                        <div class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-red me-2"></span>
+                            <div class="flex-fill">Sukar <small class="text-muted d-block">(P ≤ 0.30)</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Rincian Per Soal</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter table-striped">
+                    <thead>
+                        <tr>
+                            <th class="w-1">No</th>
+                            <th>Pertanyaan</th>
+                            <th class="w-1 text-center">Benar</th>
+                            <th class="w-1 text-center">Salah</th>
+                            <th class="w-1 text-center">Index (P)</th>
+                            <th class="w-1">Kategori</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in analysis_data %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 350px;"
+                                    title="{{ item.soal.pertanyaan|striptags }}">
+                                    {{ item.soal.pertanyaan|striptags }}
+                                </div>
+                            </td>
+                            <td class="text-center text-success fw-bold">{{ item.total_score|floatformat:0 }}</td>
+                            <td class="text-center text-danger">
+                                {% comment %} Calculate wrong count roughly or assume total_students {% endcomment %}
+                                -
+                            </td>
+                            <td class="text-center fw-bold">{{ item.difficulty|floatformat:2 }}</td>
+                            <td>
+                                {% if item.kategori == 'Mudah' %}
+                                <span class="badge bg-green">Mudah</span>
+                                {% elif item.kategori == 'Sedang' %}
+                                <span class="badge bg-yellow">Sedang</span>
+                                {% else %}
+                                <span class="badge bg-red">Sukar</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Belum ada data jawaban siswa.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

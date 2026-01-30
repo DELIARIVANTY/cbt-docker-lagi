@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% load exam_extras %}
+
+{% block title %}Ujian: {{ ujian.nama_ujian }}{% endblock %}
+
+{% block page_header %}
+<div class="sticky-top bg-white border-bottom py-3 shadow-sm" style="z-index: 1000;">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="m-0">{{ ujian.nama_ujian }}</h3>
+                <div class="text-secondary small">{{ ujian.bank_soal.mapel.nama }}</div>
+            </div>
+            <div class="col-auto">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="h2 m-0 text-red font-monospace" id="timer">00:00:00</div>
+                    <a href="#" class="btn btn-danger" onclick="confirmFinish()">Selesai Ujian</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-xl mt-3">
+    <div class="row g-3">
+        <div class="col-md-9">
+            <div class="card" style="min-height: 500px;">
+                <div class="card-body">
+                    {% for soal in questions %}
+                    <div class="question-container{% if not forloop.first %} d-none{% endif %}"
+                        id="q-{{ forloop.counter }}">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge bg-blue">Soal No. {{ forloop.counter }}</span>
+                            <span class="badge bg-secondary-lt">Bobot: {{ soal.bobot }}</span>
+                        </div>
+
+                        <div class="mb-4 fs-3">
+                            {{ soal.pertanyaan|linebreaks }}
+
+                            {% if soal.audio %}
+                            <div class="mt-3 mb-2">
+                                <audio controls class="w-100 border rounded bg-light p-2">
+                                    <source src="{{ soal.audio.url }}" type="audio/mpeg">
+                                </audio>
+                            </div>
+                            {% endif %}
+
+                            {% if soal.gambar %}
+                            <div class="mt-2">
+                                <img src="{{ soal.gambar.url }}" class="img-fluid rounded border soal-img"
+                                    style="max-height:300px;">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="options-list">
+                            {% with saved=saved_answers|get_item:soal.id %}
+
+                            {% if soal.jenis_soal == 'PG' %}
+                            <!-- A -->
+                            <label class="form-selectgroup-item w-100 mb-2">
+                                <input type="radio" name="ans-{{ soal.id }}" value="A"
+                                    class="form-selectgroup-input answer-input" data-soal="{{ soal.id }}" {% if saved
+                                    and saved.jawaban=='A' %}checked{% endif %}>
+                                <span class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <span class="badge bg-secondary me-3">A</span>
+                                    <div>{{ soal.opsi_a }}</div>
+                                </span>
+                            </label>
+
+                            <!-- B -->
+                            <label class="form-selectgroup-item w-100 mb-2">
+                                <input type="radio" name="ans-{{ soal.id }}" value="B"
+                                    class="form-selectgroup-input answer-input" data-soal="{{ soal.id }}" {% if saved
+                                    and saved.jawaban=='B' %}checked{% endif %}>
+                                <span class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <span class="badge bg-secondary me-3">B</span>
+                                    <div>{{ soal.opsi_b }}</div>
+                                </span>
+                            </label>
+
+                            <!-- C -->
+                            <label class="form-selectgroup-item w-100 mb-2">
+                                <input type="radio" name="ans-{{ soal.id }}" value="C"
+                                    class="form-selectgroup-input answer-input" data-soal="{{ soal.id }}" {% if saved
+                                    and saved.jawaban=='C' %}checked{% endif %}>
+                                <span class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <span class="badge bg-secondary me-3">C</span>
+                                    <div>{{ soal.opsi_c }}</div>
+                                </span>
+                            </label>
+
+                            {% if soal.opsi_d %}
+                            <label class="form-selectgroup-item w-100 mb-2">
+                                <input type="radio" name="ans-{{ soal.id }}" value="D"
+                                    class="form-selectgroup-input answer-input" data-soal="{{ soal.id }}" {% if saved
+                                    and saved.jawaban=='D' %}checked{% endif %}>
+                                <span class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <span class="badge bg-secondary me-3">D</span>
+                                    <div>{{ soal.opsi_d }}</div>
+                                </span>
+                            </label>
+                            {% endif %}
+
+                            {% if soal.opsi_e %}
+                            <label class="form-selectgroup-item w-100 mb-2">
+                                <input type="radio" name="ans-{{ soal.id }}" value="E"
+                                    class="form-selectgroup-input answer-input" data-soal="{{ soal.id }}" {% if saved
+                                    and saved.jawaban=='E' %}checked{% endif %}>
+                                <span class="form-selectgroup-label d-flex align-items-center p-3">
+                                    <span class="badge bg-secondary me-3">E</span>
+                                    <div>{{ soal.opsi_e }}</div>
+                                </span>
+                            </label>
+                            {% endif %}
+
+                            {% else %}
+                            <textarea class="form-control answer-input" rows="5"
+                                data-soal="{{ soal.id }}">{{ saved.jawaban_essay|default:"" }}</textarea>
+                            {% endif %}
+
+                            <div class="mt-3">
+                                <input type="checkbox" class="btn-check ragu-check" id="ragu{{ soal.id }}"
+                                    data-soal="{{ soal.id }}" {% if saved and saved.ragu_ragu %}checked{% endif %}>
+                                <label class="btn btn-outline-warning w-100" for="ragu{{ soal.id }}">
+                                    Tandai Ragu-ragu
+                                </label>
+                            </div>
+
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="card-footer d-flex justify-content-between">
+                    <button class="btn btn-secondary" id="btn-prev" onclick="changeQuestion(-1)"
+                        disabled>Sebelumnya</button>
+                    <button class="btn btn-primary" id="btn-next" onclick="changeQuestion(1)">Selanjutnya</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card sticky-top" style="top:100px;">
+                <div class="card-body">
+                    <div class="row g-2">
+                        {% for soal in questions %}
+                        {% with saved=saved_answers|get_item:soal.id %}
+                        <div class="col-3">
+                            <button class="btn w-100 nav-btn
+                                {% if saved and saved.jawaban %}btn-primary{% else %}btn-outline-secondary{% endif %}
+                                {% if saved and saved.ragu_ragu %}btn-warning{% endif %}"
+                                onclick="goToQuestion('{{ forloop.counter }}')">
+                                {{ forloop.counter }}
+                            </button>
+                        </div>
+                        {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentQ = 1;
+    const totalQ = Number("{{ questions.count }}");
+    const sesiId = Number("{{ sesi.id }}");
+    let remainingTime = Number("{{ remaining_seconds }}");
+
+    // Timer Logic
+    function updateTimer() {
+        const hours = Math.floor(remainingTime / 3600);
+        const minutes = Math.floor((remainingTime % 3600) / 60);
+        const seconds = remainingTime % 60;
+
+        document.getElementById('timer').innerText =
+            `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        if (remainingTime <= 0) {
+            finishExam();
+        } else {
+            remainingTime--;
+            setTimeout(updateTimer, 1000);
+        }
+    }
+    updateTimer();
+
+    // Navigation Logic
+    function showQuestion(num) {
+        document.querySelectorAll('.question-container').forEach(el => el.classList.add('d-none'));
+        document.getElementById(`q-${num}`).classList.remove('d-none');
+
+        // Update Buttons
+        document.getElementById('btn-prev').disabled = (num === 1);
+        const btnNext = document.getElementById('btn-next');
+        if (num === totalQ) {
+            btnNext.innerText = 'Selesai';
+            btnNext.classList.remove('btn-primary');
+            btnNext.classList.add('btn-success');
+            btnNext.onclick = confirmFinish;
+        } else {
+            btnNext.innerText = 'Selanjutnya';
+            btnNext.classList.remove('btn-success');
+            btnNext.classList.add('btn-primary');
+            btnNext.onclick = () => changeQuestion(1);
+        }
+        currentQ = num;
+
+        // Highlight Active Question in Sidebar
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('border-3', 'border-dark'));
+        const activeBtn = document.getElementById(`nav-${num}`);
+        if (activeBtn) {
+            activeBtn.classList.add('border-3', 'border-dark');
+        }
+    }
+
+    function changeQuestion(delta) {
+        const next = currentQ + delta;
+        if (next >= 1 && next <= totalQ) {
+            showQuestion(next);
+        }
+    }
+
+    // Initialize
+    showQuestion(currentQ);
+
+    function goToQuestion(num) {
+        showQuestion(Number(num));
+    }
+
+    // AJAX Save Logic
+    function saveAnswer(soalId, jawaban, ragu, isEssay = false) {
+        let payload = {
+            sesi_id: sesiId,
+            soal_id: soalId,
+            ragu_ragu: ragu
+        };
+
+        if (isEssay) {
+            payload.jawaban_essay = jawaban;
+        } else {
+            payload.jawaban = jawaban;
+        }
+
+        fetch("{% url 'simpan_jawaban' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify(payload)
+        }).then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    updateNavButton(currentQ, jawaban, ragu);
+                }
+            });
+    }
+
+    function updateNavButton(num, jawaban, ragu) {
+        const btn = document.getElementById(`nav-${num}`);
+        btn.className = 'btn w-100 nav-btn'; // Reset
+        if (ragu) {
+            btn.classList.add('btn-warning');
+        } else if (jawaban) {
+            btn.classList.add('btn-primary');
+        } else {
+            btn.classList.add('btn-outline-secondary');
+        }
+    }
+
+    // Event Listeners
+    document.querySelectorAll('.answer-input').forEach(input => {
+        input.addEventListener('change', function () {
+            const soalId = this.dataset.soal;
+            const val = this.value;
+            const isEssay = this.tagName === 'TEXTAREA';
+            // Check if ragu is checked
+            const raguCheck = document.querySelector(`.ragu-check[data-soal="${soalId}"]`);
+            saveAnswer(soalId, val, raguCheck ? raguCheck.checked : false, isEssay);
+        });
+    });
+
+    document.querySelectorAll('.ragu-check').forEach(check => {
+        check.addEventListener('change', function () {
+            const soalId = this.dataset.soal;
+            // Get current answer
+            const ansInput = document.querySelector(`input[name="ans-${soalId}"]:checked`);
+            const val = ansInput ? ansInput.value : null;
+            saveAnswer(soalId, val, this.checked);
+        });
+    });
+
+    // Finish Logic
+    function confirmFinish() {
+        if (confirm('Apakah Anda yakin ingin menyelesaikan ujian ini? Jawaban tidak dapat diubah setelah selesai.')) {
+            finishExam();
+        }
+    }
+
+    function finishExam() {
+        window.location.href = "{% url 'selesai_ujian' ujian.pk %}";
+    }
+    // --- SECURITY / ANTI-CHEAT ---
+
+    // 1. Prevent Right Click
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // 2. Prevent Copy/Cut/Paste
+    const preventCopy = (e) => {
+        e.preventDefault();
+        alert('Fitur copy-paste dimatikan selama ujian!');
+    };
+    document.addEventListener('copy', preventCopy);
+    document.addEventListener('cut', preventCopy);
+    document.addEventListener('paste', preventCopy);
+
+    // 3. Detect Tab Switching
+    let violationCount = 0;
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            violationCount++;
+            document.title = `⚠️ PERINGATAN (${violationCount}) - Ujian Sedang Berlangsung`;
+            alert(`PERINGATAN! Anda terdeteksi meninggalkan halaman ujian.\n\nPelanggaran ke-${violationCount}.\n\nAktivitas ini tercatat.`);
+
+            // Optional: Send log to server via AJAX if needed in future
+            console.warn(`User left tab at ${new Date().toISOString()}`);
+        } else {
+            document.title = "Ujian Sedang Berlangsung";
+        }
+    });
+
+    // Lightbox for images
+    const images = document.querySelectorAll('.soal-img');
+    const lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        cursor: zoom-out;
+    `;
+    const lightboxImg = document.createElement('img');
+    lightboxImg.style.cssText = "max-width: 90%; max-height: 90%; object-fit: contain;";
+    lightbox.appendChild(lightboxImg);
+    document.body.appendChild(lightbox);
+
+    images.forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+            lightboxImg.src = img.src;
+            lightbox.style.display = 'flex';
+        });
+    });
+
+    lightbox.addEventListener('click', () => {
+        lightbox.style.display = 'none';
+    });
+</script>
+{% endblock %}

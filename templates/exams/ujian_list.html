@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Jadwal Ujian{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title">
+                Jadwal Ujian
+            </h2>
+        </div>
+        <div class="col-auto ms-auto d-print-none">
+            <div class="btn-list">
+                <a href="{% url 'ujian_create' %}" class="btn btn-primary d-none d-sm-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Jadwalkan Ujian
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="col-12 mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-auto">
+            <div class="btn-group w-100">
+                <a href="?{% if request.GET.kelas %}kelas={{ request.GET.kelas }}&{% endif %}"
+                    class="btn {% if not request.GET.waktu %}btn-primary{% else %}btn-outline-primary{% endif %}">Semua</a>
+                <a href="?waktu=today{% if request.GET.kelas %}&kelas={{ request.GET.kelas }}{% endif %}"
+                    class="btn {% if request.GET.waktu == 'today' %}btn-primary{% else %}btn-outline-primary{% endif %}">Hari
+                    Ini</a>
+                <a href="?waktu=upcoming{% if request.GET.kelas %}&kelas={{ request.GET.kelas }}{% endif %}"
+                    class="btn {% if request.GET.waktu == 'upcoming' %}btn-primary{% else %}btn-outline-primary{% endif %}">Akan
+                    Datang</a>
+                <a href="?waktu=past{% if request.GET.kelas %}&kelas={{ request.GET.kelas }}{% endif %}"
+                    class="btn {% if request.GET.waktu == 'past' %}btn-primary{% else %}btn-outline-primary{% endif %}">Selesai</a>
+            </div>
+        </div>
+
+        {% if user.role != 'siswa' %}
+        <div class="col-12 col-md-auto ms-md-auto">
+            <div class="dropdown">
+                <button class="btn dropdown-toggle w-100" type="button" id="dropdownMenuButton1"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter me-2" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-2 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" />
+                    </svg>
+                    {% if request.GET.kelas %}
+                    {% for k in available_classes %}
+                    {% if k.id|stringformat:"s" == request.GET.kelas %}Kelas: {{ k.nama }}{% endif %}
+                    {% endfor %}
+                    {% else %}
+                    Semua Kelas
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item"
+                            href="?{% if request.GET.waktu %}waktu={{ request.GET.waktu }}{% endif %}">Semua Kelas</a>
+                    </li>
+                    {% for k in available_classes %}
+                    <li><a class="dropdown-item {% if k.id|stringformat:'s' == request.GET.kelas %}active{% endif %}"
+                            href="?kelas={{ k.id }}{% if request.GET.waktu %}&waktu={{ request.GET.waktu }}{% endif %}">{{
+                            k.nama }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table card-table table-vcenter text-nowrap datatable">
+            <thead>
+                <tr>
+                    <th>Nama Ujian</th>
+                    <th>Bank Soal</th>
+                    <th>Kelas</th>
+                    <th>Waktu Mulai</th>
+                    <th>Token</th>
+                    <th>Status</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ujian in ujian_list %}
+                <tr>
+                    <td class="fw-bold">{{ ujian.nama_ujian }}</td>
+                    <td><span class="text-muted">{{ ujian.bank_soal.judul }}</span></td>
+                    <td>
+                        <div class="badges-list">
+                            {% for kelas in ujian.kelas.all %}
+                            <span class="badge badge-outline text-blue">{{ kelas.nama }}</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>{{ ujian.waktu_mulai|date:"d M Y H:i" }}</td>
+                    <td><code class="text-azure fw-bold">{{ ujian.token }}</code></td>
+                    <td>
+                        {% if ujian.aktif %}
+                        <span class="badge bg-green-lt">Aktif</span>
+                        {% else %}
+                        <span class="badge bg-secondary-lt">Non-Aktif</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-list flex-nowrap justify-content-end">
+                            <div class="d-none d-lg-flex">
+                                <a href="{% url 'analisis_ujian' ujian.pk %}" class="btn btn-icon btn-outline-purple"
+                                    title="Analisis">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path
+                                            d="M3 12m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                                        <path
+                                            d="M9 8m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                                        <path
+                                            d="M15 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                                        <path d="M4 20l14 0" />
+                                    </svg>
+                                </a>
+
+                                <a href="{% url 'hasil_ujian' ujian.pk %}" class="btn btn-icon btn-outline-info"
+                                    title="Lihat Nilai">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                        <path
+                                            d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                    </svg>
+                                </a>
+                                <a href="{% url 'ujian_edit' ujian.pk %}" class="btn btn-icon btn-outline-primary"
+                                    title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M9 7h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-3" />
+                                        <path d="M9 15h3l8.5 -8.5a1.5 1.5 0 0 0 -3 -3l-8.5 8.5v3" />
+                                        <line x1="16" y1="5" x2="19" y2="8" />
+                                    </svg>
+                                </a>
+                                {% if user.role == 'admin' %}
+                                <a href="{% url 'atur_pengawas' ujian.pk %}" class="btn btn-icon btn-outline-dark"
+                                    title="Atur Pengawas">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path
+                                            d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3" />
+                                    </svg>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'ujian_delete' ujian.pk %}" class="btn btn-icon btn-outline-danger"
+                                    title="Hapus">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M4 7l16 0" />
+                                        <path d="M10 11l0 6" />
+                                        <path d="M14 11l0 6" />
+                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                    </svg>
+                                </a>
+                            </div>
+
+                            <div class="dropdown d-lg-none">
+                                <button class="btn btn-sm dropdown-toggle align-text-top" data-bs-toggle="dropdown">
+                                    Aksi
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" href="{% url 'analisis_ujian' ujian.pk %}">
+                                        Analisis Ujian
+                                    </a>
+                                    <a class="dropdown-item" href="{% url 'hasil_ujian' ujian.pk %}">
+                                        Lihat Nilai
+                                    </a>
+                                    {% if user.role == 'admin' %}
+                                    <a class="dropdown-item" href="{% url 'atur_pengawas' ujian.pk %}">
+                                        Atur Pengawas
+                                    </a>
+                                    {% endif %}
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{% url 'ujian_edit' ujian.pk %}">
+                                        Edit Jadwal
+                                    </a>
+                                    <a class="dropdown-item text-danger" href="{% url 'ujian_delete' ujian.pk %}">
+                                        Hapus Jadwal
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">Belum ada jadwal ujian.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

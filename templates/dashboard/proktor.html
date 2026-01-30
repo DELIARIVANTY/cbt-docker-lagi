@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="h3 mb-4 text-gray-800">Dashboard Proktor / Panitia Ujian</h1>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Ujian Aktif</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ ujian_aktif|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Peserta Ujian</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_siswa_mengerjakan }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Selesai Mengerjakan</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_siswa_selesai }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Exams Table -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Status Ujian Realtime</h6>
+        <span class="badge badge-success pulse-animation">
+            <i class="fas fa-circle"></i> Live Monitoring
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Nama Ujian</th>
+                        <th>Mapel</th>
+                        <th>Waktu Mulai</th>
+                        <th>Durasi</th>
+                        <th>Token</th>
+                        <th>Peserta (Aktif/Selesai)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in monitoring_data %}
+                    <tr>
+                        <td>{{ item.ujian.nama_ujian }}</td>
+                        <td>{{ item.ujian.bank_soal.mapel.nama }}</td>
+                        <td>{{ item.ujian.waktu_mulai|date:"d M Y H:i" }}</td>
+                        <td>{{ item.ujian.durasi }} Menit</td>
+                        <td><span class="badge badge-warning text-dark">{{ item.ujian.token }}</span></td>
+                        <td>
+                            {% widthratio item.selesai item.total_peserta|default:1 100 as percentage %}
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                    style="--prog-width: {{ percentage|default:0 }}%; width: var(--prog-width);"
+                                    aria-valuemin="0" aria-valuemax="100">
+                                    {{ item.selesai }}/{{ item.total_peserta }}
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ item.aktif }} sedang mengerjakan</small>
+                        </td>
+                        <td>
+                            <a href="{% url 'monitoring_ujian' item.ujian.pk %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-tv"></i> Monitor
+                            </a>
+                            <a href="{% url 'kartu_peserta_ujian' item.ujian.pk %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-id-card"></i> Kartu Peserta
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">Tidak ada ujian yang sedang aktif saat ini.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+</style>
+{% endblock %}

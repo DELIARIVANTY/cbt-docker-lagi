@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Periksa Jawaban{% endblock %}
+
+{% block content %}
+<div class="row g-2 align-items-center mb-4">
+    <div class="col">
+        <div class="page-pretitle">Koreksi Manual</div>
+        <h2 class="page-title">{{ sesi.siswa.username }} - {{ sesi.ujian.nama_ujian }}</h2>
+    </div>
+    <div class="col-auto ms-auto">
+        <div class="btn-list">
+            <a href="{% url 'koreksi_list' %}" class="btn btn-secondary">Kembali</a>
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row row-cards mb-5">
+        {% for item in essay_answers %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-status-start bg-blue"></div>
+                <div class="card-header">
+                    <h4 class="card-title">Soal No. {{ forloop.counter }} <span class="badge bg-blue ms-2">Bobot: {{
+                            item.soal.bobot }}</span></h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Pertanyaan:</label>
+                        <div class="markdown p-3 rounded bg-light border">
+                            {{ item.soal.pertanyaan|linebreaks }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Jawaban Siswa:</label>
+                        <div
+                            class="form-control-plaintext p-3 rounded border {% if not item.jawaban_essay %}bg-red-lt{% endif %}">
+                            {{ item.jawaban_essay|default:"<em>Siswa tidak menjawab soal ini.</em>"|linebreaks }}
+                        </div>
+                    </div>
+
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label required">Nilai (0 - {{ item.soal.bobot }})</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-award"
+                                        width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+                                        stroke="currentColor" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <circle cx="12" cy="9" r="6" />
+                                        <polyline points="9 14.2 9 21 12 19 15 21 15 14.2"
+                                            transform="rotate(-30 12 9)" />
+                                        <polyline points="9 14.2 9 21 12 19 15 21 15 14.2"
+                                            transform="rotate(30 12 9)" />
+                                    </svg>
+                                </span>
+                                <input type="number" step="0.1" name="score_{{ item.id }}"
+                                    class="form-control font-weight-bold" value="{{ item.score }}"
+                                    max="{{ item.soal.bobot }}" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-hint mt-2">Berikan nilai seobjektif mungkin.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Sticky Bottom Action Bar -->
+    <div class="fixed-bottom bg-white border-top py-3 shadow-lg" style="z-index: 1000;">
+        <div class="container-xl">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted">
+                    Total {{ essay_answers|length }} soal diperiksa.
+                </div>
+                <div>
+                    <a href="{% url 'koreksi_list' %}" class="btn btn-link link-secondary me-2">Batal</a>
+                    <button type="submit" class="btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24"
+                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M5 12l5 5l10 -10" />
+                        </svg>
+                        Simpan Semua Nilai
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Spacer for sticky bottom -->
+    <div style="height: 80px;"></div>
+</form>
+{% endblock %}

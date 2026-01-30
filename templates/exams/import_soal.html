@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Soal{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title">
+                Import Soal ke "{{ bank.judul }}"
+            </h2>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row row-cards">
+    <div class="col-12">
+        <form action="" method="post" enctype="multipart/form-data" class="card">
+            {% csrf_token %}
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Pilih File (Excel, Word, PDF)</label>
+                    <input type="file" name="file" class="form-control" accept=".xlsx, .docx, .pdf" required>
+                    <div class="form-hint mt-2">
+                        <strong>Panduan Format:</strong>
+                        <ul class="list-unstyled mt-1">
+                            <li class="mb-2">
+                                <span class="badge bg-green-lt">Excel (.xlsx)</span>:
+                                <br>Gunakan format <strong>Tabel</strong> dengan kolom:
+                                <br><code>Pertanyaan | Opsi A | Opsi B | Opsi C | Opsi D | Opsi E | Kunci | Bobot | Tipe(PG/ESSAY)</code>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'download_template' %}" class="btn btn-outline-success">
+                    <i class="fas fa-file-excel me-2"></i> Download Template Excel
+                </a>
+                <div>
+                    <a href="{% url 'bank_soal_detail' bank.pk %}" class="btn btn-link link-secondary">Batal</a>
+                    <button type="submit" class="btn btn-primary">Upload & Import</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

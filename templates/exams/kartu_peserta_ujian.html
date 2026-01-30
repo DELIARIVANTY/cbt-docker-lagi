@@ -1,0 +1,283 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cetak Kartu Peserta - {{ ujian.nama_ujian }}</title>
+    <style>
+        /* Reset & Base */
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #cccccc;
+            /* Abu-abu untuk preview di layar */
+            font-family: 'Times New Roman', Times, serif;
+            /* Font Formal */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Container Menu (Tidak dicetak) */
+        .no-print {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-family: Arial, sans-serif;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 0 5px;
+            color: white;
+        }
+
+        .btn-print {
+            background: #0056b3;
+        }
+
+        .btn-back {
+            background: #555;
+        }
+
+        /* Kertas A4 */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 0 auto;
+            padding: 10mm;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* 2 Kolom */
+            grid-auto-rows: max-content;
+            gap: 10mm 5mm;
+            /* Jarak antar kartu */
+        }
+
+        /* Desain Kartu Standar */
+        .card {
+            border: 1px solid #000;
+            padding: 5px;
+            height: auto;
+            position: relative;
+            background: white;
+            page-break-inside: avoid;
+        }
+
+        /* Kop Surat */
+        .card-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 3px double #000;
+            /* Garis Kop Surat Standar */
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            margin-right: 10px;
+        }
+
+        .header-text {
+            text-align: center;
+            flex: 1;
+        }
+
+        .header-text h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .header-text p {
+            margin: 2px 0 0;
+            font-size: 10px;
+        }
+
+        /* Body Kartu */
+        .card-body {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Kotak Foto */
+        .photo-box {
+            width: 25mm;
+            /* Ukuran standar 3x4 */
+            height: 35mm;
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        /* Tabel Data */
+        .data-table {
+            width: 100%;
+            font-size: 11px;
+            border-collapse: collapse;
+        }
+
+        .data-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .data-table .label {
+            width: 70px;
+        }
+
+        .data-table .sep {
+            width: 10px;
+            text-align: center;
+        }
+
+        .data-table .val {
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* Highlight Username/Password */
+        .credentials {
+            border: 1px dashed #000;
+            padding: 2px 5px;
+            background: #f0f0f0;
+            font-family: 'Courier New', monospace;
+            /* Font mesin ketik */
+            font-size: 12px;
+        }
+
+        /* Tanda Tangan */
+        .signature {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 11px;
+            float: right;
+            width: 40%;
+        }
+
+        .ttd-space {
+            height: 40px;
+        }
+
+        /* CSS Cetak */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .page {
+                width: 100%;
+                margin: 0;
+                padding: 10mm;
+                box-shadow: none;
+            }
+
+            .card {
+                border: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print">
+        <h3>Preview Cetak Kartu Peserta</h3>
+        <button onclick="window.print()" class="btn btn-print">🖨️ Cetak Kartu</button>
+        <button onclick="window.history.back()" class="btn btn-back">Kembali</button>
+    </div>
+
+    <div class="page">
+        {% for siswa in peserta_list %}
+        <div class="card">
+            <div class="card-header">
+                <img src="{% static 'logo/logo_sman1.png' %}" alt="Logo" class="logo">
+                <div class="header-text">
+                    <h3>KARTU PESERTA UJIAN</h3>
+                    <p>SMAN 1 KRAGILAN</p>
+                    <p style="font-size: 9px; font-weight: normal;">Tahun Pelajaran 2024/2025</p>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="photo-box">
+                    Pas Foto<br>3 x 4
+                </div>
+
+                <div style="flex-grow: 1;">
+                    <table class="data-table">
+                        <tr>
+                            <td class="label">Nama</td>
+                            <td class="sep">:</td>
+                            <td class="val">{{ siswa.nama|default:siswa.first_name|upper }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Kelas</td>
+                            <td class="sep">:</td>
+                            <td class="val">{{ siswa.kelas.nama }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Ujian</td>
+                            <td class="sep">:</td>
+                            <td class="val">{{ ujian.nama_ujian }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="height: 5px;"></td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">Username</td>
+                            <td class="sep">:</td>
+                            <td><span class="credentials">{{ siswa.username }}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="label">Password</td>
+                            <td class="sep">:</td>
+                            <td><span class="credentials">{{ siswa.plain_password|default:"****" }}</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="signature">
+                <div>Kragilan, {% now "d M Y" %}</div>
+                <div>Panitia Ujian,</div>
+                <div class="ttd-space">
+                </div>
+                <div style="font-weight: bold; text-decoration: underline;">( ........................... )</div>
+                <div style="font-size: 9px;">NIP. -</div>
+            </div>
+
+            <div style="clear: both;"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+
+</html>

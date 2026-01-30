@@ -1,0 +1,101 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>{% block title %}Login - SMAN 1 KRAGILAN{% endblock %}</title>
+
+    <!-- CSS files -->
+    <link href="{% static 'dist/css/tabler.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'dist/css/tabler-flags.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'dist/css/tabler-payments.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'dist/css/tabler-vendors.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'dist/css/demo.min.css' %}" rel="stylesheet" />
+
+    <style>
+        @import url('https://rsms.me/inter/inter.css');
+
+        :root {
+            --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+        }
+
+        body {
+            font-feature-settings: "cv03", "cv04", "cv11";
+        }
+
+        .login-logo img {
+            height: 28px !important;
+        }
+
+        .login-card {
+            max-width: 420px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column">
+    <div class="page page-center">
+        <div class="container-tight py-4">
+            <div class="text-center mb-4 login-logo">
+                <a href="."
+                    class="navbar-brand navbar-brand-autodark d-flex align-items-center justify-content-center gap-2">
+                    <img src="{% static 'logo/logo_sman1.png' %}" alt="SMKN 1 KRAGILAN">
+                    <span class="fs-3 fw-bold">SMAN 1 KRAGILAN</span>
+                </a>
+            </div>
+
+            <div class="card card-md shadow-sm login-card">
+                <div class="card-body">
+                    <h2 class="h3 text-center mb-4">Login to your account</h2>
+
+                    <form action="{% url 'login' %}" method="post" autocomplete="off" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" placeholder="Your username"
+                                autocomplete="off">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <div class="input-group input-group-flat">
+                                <input type="password" name="password" class="form-control" placeholder="Your password"
+                                    autocomplete="off">
+                                <span class="input-group-text">
+                                    <a href="#" class="link-secondary" data-bs-toggle="tooltip" title="Show password">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="22" height="22"
+                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" />
+                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                            <path
+                                                d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                        </svg>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if error %}
+                        <div class="alert alert-danger py-2">{{ error }}</div>
+                        {% endif %}
+
+                        <div class="form-footer mt-3">
+                            <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="{% static 'dist/js/tabler.min.js' %}" defer></script>
+    <script src="{% static 'dist/js/demo.min.js' %}" defer></script>
+</body>
+
+</html>

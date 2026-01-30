@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Waka Dashboard{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title">
+                Dashboard Waka Kurikulum
+            </h2>
+            <div class="text-secondary mt-1">Laporan & Statistik Ujian</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row row-deck row-cards">
+    <!-- Stats Cards -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Total Ujian</div>
+                </div>
+                <div class="h1 mb-3">{{ total_ujian }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Ujian Aktif</div>
+                </div>
+                <div class="h1 mb-3 text-success">{{ ujian_aktif }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Total Siswa</div>
+                </div>
+                <div class="h1 mb-3">{{ total_siswa }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Rata-rata Nilai</div>
+                </div>
+                <div class="h1 mb-3 text-primary">{{ rata_nilai|floatformat:1 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Ringkasan</h3>
+            </div>
+            <div class="card-body">
+                <div class="datagrid">
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Total Guru</div>
+                        <div class="datagrid-content">{{ total_guru }}</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Total Siswa</div>
+                        <div class="datagrid-content">{{ total_siswa }}</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Sesi Ujian Selesai</div>
+                        <div class="datagrid-content">{{ total_sesi }}</div>
+                    </div>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Rata-rata Nilai</div>
+                        <div class="datagrid-content">{{ rata_nilai|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Akses Cepat</h3>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'ujian_list' %}"
+                    class="list-group-item list-group-item-action d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 12m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                        <path d="M9 8m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                        <path d="M15 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" />
+                    </svg>
+                    Lihat Semua Jadwal Ujian
+                </a>
+                <a href="/admin/exams/sesiujian/"
+                    class="list-group-item list-group-item-action d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon me-2" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                        <path d="M9 12l.01 0" />
+                        <path d="M13 12l2 0" />
+                        <path d="M9 16l.01 0" />
+                        <path d="M13 16l2 0" />
+                    </svg>
+                    Lihat Hasil Ujian Siswa
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Exams -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Ujian Terbaru</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter">
+                    <thead>
+                        <tr>
+                            <th>Nama Ujian</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Waktu</th>
+                            <th>Status</th>
+                            <th class="text-end">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ujian in recent_exams %}
+                        <tr>
+                            <td class="fw-bold">{{ ujian.nama_ujian }}</td>
+                            <td>{{ ujian.bank_soal.mapel.nama }}</td>
+                            <td>{{ ujian.waktu_mulai|date:"d M Y H:i" }}</td>
+                            <td>
+                                {% if ujian.aktif %}
+                                <span class="badge bg-success">Aktif</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Non-Aktif</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'hasil_ujian' ujian.pk %}" class="btn btn-sm btn-outline-primary">
+                                    Lihat Hasil
+                                </a>
+                                <a href="{% url 'analisis_ujian' ujian.pk %}" class="btn btn-sm btn-outline-info">
+                                    Analisis
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">Belum ada data ujian.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

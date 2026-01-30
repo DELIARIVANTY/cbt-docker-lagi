@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="page-header d-print-none">
+        <div class="row align-items-center">
+            <div class="col">
+                <h2 class="page-title">
+                    {{ title }}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="col-md-6">
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% if field.name == 'mapel' %}
+                    <div class="input-group">
+                        {{ field }}
+                        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#modal-add-mapel"
+                            title="Tambah Mapel Baru">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                        </button>
+                    </div>
+                    {% else %}
+                    {{ field }}
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ field.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <a href="{% url 'bank_soal_list' %}" class="btn btn-link">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Add Mapel -->
+<div class="modal modal-blur fade" id="modal-add-mapel" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Mata Pelajaran</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Pilih Mata Pelajaran</label>
+                    <select class="form-select" id="select-mapel-id">
+                        <option value="">-- Pilih Mapel --</option>
+                        {% for m in available_mapels %}
+                        <option value="{{ m.id }}">{{ m.nama }} ({{ m.kode }})</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-hint">Mata pelajaran yang Anda pilih akan ditambahkan ke daftar ajar
+                        Anda.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btn-save-mapel">Tambahkan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Initialize TomSelect for the main Mapel dropdown
+        if (window.TomSelect) {
+            new TomSelect("#id_mapel", {
+                copyClassesToDropdown: false,
+                dropdownParent: 'body',
+                controlInput: '<input>',
+                render: {
+                    item: function (data, escape) {
+                        if (data.customProperties) {
+                            return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+                        }
+                        return '<div>' + escape(data.text) + '</div>';
+                    },
+                    option: function (data, escape) {
+                        if (data.customProperties) {
+                            return '<div><span class="dropdown-item-indicator">' + data.customProperties + '</span>' + escape(data.text) + '</div>';
+                        }
+                        return '<div>' + escape(data.text) + '</div>';
+                    },
+                },
+            });
+        }
+    });
+
+    document.getElementById('btn-save-mapel').addEventListener('click', function () {
+        const mapelId = document.getElementById('select-mapel-id').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        if (!mapelId) {
+            alert('Silakan pilih mata pelajaran!');
+            return;
+        }
+
+        // Disable button to prevent double submit
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = 'Menyimpan...';
+
+        fetch('{% url "api_add_mapel" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: `mapel_id=${encodeURIComponent(mapelId)}`
+        })
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+                const text = !isJson ? await response.text() : null;
+
+                if (!response.ok) {
+                    const error = (data && data.message) || text || response.statusText;
+                    throw new Error(error);
+                }
+                return data;
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // Add to dropdown
+                    const select = document.getElementById('id_mapel');
+
+                    // Check if TomSelect instance exists
+                    if (select.tomselect) {
+                        select.tomselect.addOption({ value: data.mapel.id, text: data.mapel.nama });
+                        select.tomselect.addItem(data.mapel.id);
+                    } else {
+                        // Fallback for standard select
+                        const option = new Option(data.mapel.nama, data.mapel.id);
+                        select.add(option, undefined);
+                        select.value = data.mapel.id;
+                    }
+
+                    // Close modal
+                    const modalEl = document.getElementById('modal-add-mapel');
+                    if (typeof bootstrap !== 'undefined') {
+                        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modal.hide();
+                    } else {
+                        // Fallback if bootstrap object is missing (manually close)
+                        modalEl.classList.remove('show');
+                        modalEl.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) backdrop.remove();
+                    }
+
+                    // Remove from modal dropdown
+                    const modalSelect = document.getElementById('select-mapel-id');
+                    for (let i = 0; i < modalSelect.options.length; i++) {
+                        if (modalSelect.options[i].value == mapelId) {
+                            modalSelect.remove(i);
+                            break;
+                        }
+                    }
+
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan: ' + error.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = 'Tambahkan';
+            });
+    });
+</script>
+{% endblock %}

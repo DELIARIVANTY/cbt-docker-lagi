@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="page-header d-print-none">
+        <div class="row align-items-center">
+            <div class="col">
+                <h2 class="page-title">
+                    {{ title }}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="col-md-8">
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Pertanyaan</label>
+                    {{ form.pertanyaan }}
+                    {% if form.pertanyaan.errors %}
+                    <div class="invalid-feedback d-block">{{ form.pertanyaan.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Gambar (Opsional)</label>
+                    {{ form.gambar }}
+                    {% if form.gambar.errors %}
+                    <div class="invalid-feedback d-block">{{ form.gambar.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Jumlah Opsi Jawaban</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="num_options" id="opt3" value="3" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="opt3">A - C</label>
+
+                        <input type="radio" class="btn-check" name="num_options" id="opt4" value="4" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="opt4">A - D</label>
+
+                        <input type="radio" class="btn-check" name="num_options" id="opt5" value="5" autocomplete="off"
+                            checked>
+                        <label class="btn btn-outline-primary" for="opt5">A - E</label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3 option-field" id="div_opsi_a">
+                        <label class="form-label">Opsi A</label>
+                        {{ form.opsi_a }}
+                    </div>
+                    <div class="col-md-6 mb-3 option-field" id="div_opsi_b">
+                        <label class="form-label">Opsi B</label>
+                        {{ form.opsi_b }}
+                    </div>
+                    <div class="col-md-6 mb-3 option-field" id="div_opsi_c">
+                        <label class="form-label">Opsi C</label>
+                        {{ form.opsi_c }}
+                    </div>
+                    <div class="col-md-6 mb-3 option-field" id="div_opsi_d">
+                        <label class="form-label">Opsi D</label>
+                        {{ form.opsi_d }}
+                    </div>
+                    <div class="col-md-6 mb-3 option-field" id="div_opsi_e">
+                        <label class="form-label">Opsi E</label>
+                        {{ form.opsi_e }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Kunci Jawaban</label>
+                    {{ form.kunci_jawaban }}
+                    {% if form.kunci_jawaban.errors %}
+                    <div class="invalid-feedback d-block">{{ form.kunci_jawaban.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Bobot Soal</label>
+                    {{ form.bobot }}
+                </div>
+
+                <div class="form-footer">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <a href="{% url 'bank_soal_detail' bank.pk %}" class="btn btn-link">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const radios = document.querySelectorAll('input[name="num_options"]');
+        const divD = document.getElementById('div_opsi_d');
+        const divE = document.getElementById('div_opsi_e');
+        const keySelect = document.getElementById('id_kunci_jawaban');
+
+        function updateVisibility() {
+            const val = document.querySelector('input[name="num_options"]:checked').value;
+
+            if (val === '3') {
+                divD.style.display = 'none';
+                divE.style.display = 'none';
+                // Disable inputs to avoid validation errors if required (though we made them optional)
+                // But clearing them is good UX
+            } else if (val === '4') {
+                divD.style.display = 'block';
+                divE.style.display = 'none';
+            } else {
+                divD.style.display = 'block';
+                divE.style.display = 'block';
+            }
+
+            // Update Key Dropdown options
+            for (let i = 0; i < keySelect.options.length; i++) {
+                const opt = keySelect.options[i];
+                if (opt.value === 'D') opt.style.display = (val >= 4) ? '' : 'none';
+                if (opt.value === 'E') opt.style.display = (val >= 5) ? '' : 'none';
+            }
+        }
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', updateVisibility);
+        });
+
+        // Initial check
+        updateVisibility();
+    });
+</script>
+{% endblock %}

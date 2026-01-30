@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Guru{% endblock %}
+
+{% block page_header %}
+<div class="container-xl">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title">
+                Dashboard Guru
+            </h2>
+            <div class="text-muted mt-1">Selamat datang, {{ user.nama|default:user.username }}</div>
+        </div>
+        <div class="col-auto ms-auto d-print-none">
+            <div class="btn-list">
+                <a href="{% url 'bank_soal_create' %}" class="btn btn-primary d-none d-sm-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Buat Bank Soal
+                </a>
+                <a href="{% url 'ujian_create' %}" class="btn btn-success d-none d-sm-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Jadwalkan Ujian
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row row-deck row-cards mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-link card-link-pop h-100">
+            <div class="card-status-top bg-blue"></div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Total Bank Soal</div>
+                </div>
+                <div class="h1 mb-3">{{ total_bank_soal }}</div>
+                <a href="{% url 'bank_soal_list' %}" class="stretched-link text-muted">Lihat Detail</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-link card-link-pop h-100">
+            <div class="card-status-top bg-green"></div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Jadwal Ujian</div>
+                </div>
+                <div class="h1 mb-3">{{ total_ujian }}</div>
+                <a href="{% url 'ujian_list' %}" class="stretched-link text-muted">Lihat Semua</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-link card-link-pop h-100">
+            <div class="card-status-top bg-yellow"></div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Ujian Aktif</div>
+                </div>
+                <div class="h1 mb-3">{{ active_exams }}</div>
+                <a href="{% url 'ujian_list' %}?waktu=upcoming" class="stretched-link text-muted">Pantau</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-link card-link-pop h-100">
+            <div class="card-status-top bg-red"></div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Perlu Koreksi</div>
+                </div>
+                <div class="h1 mb-3 text-danger">
+                    Cek
+                </div>
+                <a href="{% url 'koreksi_list' %}" class="stretched-link text-muted">Periksa Jawaban</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row row-deck row-cards mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Tugas Mengawas Ujian</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th>Ujian</th>
+                            <th>Kelas</th>
+                            <th>Waktu Mulai</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for jadwal in supervisor_assignments %}
+                        <tr>
+                            <td>{{ jadwal.ujian.nama_ujian }}</td>
+                            <td>{{ jadwal.kelas.nama }}</td>
+                            <td>{{ jadwal.ujian.waktu_mulai }}</td>
+                            <td>
+                                {% if jadwal.ujian.aktif %}
+                                <span class="badge bg-green">Aktif</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Non-Aktif</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if jadwal.ujian.aktif %}
+                                <a href="{% url 'monitoring_ujian' jadwal.ujian.pk %}" class="btn btn-primary btn-sm">
+                                    Monitoring
+                                </a>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Anda tidak memiliki jadwal mengawas saat ini.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards">
+    <!-- Bank Soal Short -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Bank Soal Saya</h3>
+                <div class="card-actions">
+                    <a href="{% url 'bank_soal_list' %}" class="btn btn-outline-primary btn-sm">Lihat Semua</a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th>Judul</th>
+                            <th>Mapel</th>
+                            <th>Soal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bank in bank_soal_list|slice:":5" %}
+                        <tr>
+                            <td><a href="{% url 'bank_soal_detail' bank.pk %}">{{ bank.judul|truncatechars:25 }}</a>
+                            </td>
+                            <td>{{ bank.mapel.nama }}</td>
+                            <td><span class="badge bg-blue-lt">{{ bank.questions.count }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Belum ada bank soal.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Exams Short -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Jadwal Ujian Terbaru</h3>
+                <div class="card-actions">
+                    <a href="{% url 'ujian_list' %}" class="btn btn-outline-success btn-sm">Lihat Semua</a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th>Nama Ujian</th>
+                            <th>Kelas</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ujian in ujian_list|slice:":5" %}
+                        <tr>
+                            <td><a href="{% url 'ujian_edit' ujian.pk %}">{{ ujian.nama_ujian|truncatechars:20 }}</a>
+                            </td>
+                            <td>
+                                <span class="text-muted small">
+                                    {% for k in ujian.kelas.all|slice:":2" %}
+                                    {{ k.nama }}
+                                    {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    {% if ujian.kelas.count > 2 %}...{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if ujian.aktif %}
+                                <span class="badge bg-green">Aktif</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Non-Aktif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Belum ada jadwal.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

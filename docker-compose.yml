@@ -1,0 +1,31 @@
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=cbt_db
+      - DB_USER=cbt_user
+      - DB_PASSWORD=cbt_password
+      - DJANGO_ALLOWED_HOSTS=*
+
+  db:
+    image: mysql:8.0
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=cbt_db
+      - MYSQL_USER=cbt_user
+      - MYSQL_PASSWORD=cbt_password
+      - MYSQL_ROOT_PASSWORD=root_password
+    ports:
+      - "3306:3306"
+
+volumes:
+  db_data:

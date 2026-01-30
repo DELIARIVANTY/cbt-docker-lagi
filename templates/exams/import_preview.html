@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Preview Import Soal</h3>
+    </div>
+    <div class="card-body">
+        <p>Silakan periksa data berikut sebelum disimpan ke Database.</p>
+        
+        {% if errors %}
+        <div class="alert alert-danger">
+            <h5><i class="icon fas fa-ban"></i> Ditemukan Error!</h5>
+            <ul>
+                {% for err in errors %}
+                <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+            <p>Silakan perbaiki file Excel Anda dan upload ulang.</p>
+            <a href="{% url 'import_soal' bank.id %}" class="btn btn-warning">Upload Ulang</a>
+        </div>
+        {% endif %}
+
+        {% if valid_data %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>No Excel</th>
+                        <th>Tipe</th>
+                        <th>Pertanyaan</th>
+                        <th>Opsi (A/B/C/D/E)</th>
+                        <th>Kunci</th>
+                        <th>Bobot</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in valid_data %}
+                    <tr>
+                        <td>{{ item.index }}</td>
+                        <td><span class="badge {% if item.jenis_soal == 'PG' %}badge-info{% else %}badge-success{% endif %}">{{ item.jenis_soal }}</span></td>
+                        <td>{{ item.pertanyaan|truncatewords:10 }}</td>
+                        <td>
+                            {% if item.jenis_soal == 'PG' %}
+                                A: {{ item.opsi_a|default:"-" }}<br>
+                                B: {{ item.opsi_b|default:"-" }}<br>
+                                C: {{ item.opsi_c|default:"-" }}<br>
+                                D: {{ item.opsi_d|default:"-" }}<br>
+                                E: {{ item.opsi_e|default:"-" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ item.kunci_jawaban|default:"-" }}</td>
+                        <td>{{ item.bobot }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not errors %}
+        <form method="post" action="{% url 'import_commit' bank.id %}" class="mt-3">
+            {% csrf_token %}
+            <div class="alert alert-info">
+                <i class="icon fas fa-info"></i> Total <b>{{ valid_data|length }}</b> soal siap diimpor.
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan ke Bank Soal
+            </button>
+            <a href="{% url 'bank_soal_detail' bank.id %}" class="btn btn-secondary">Batal</a>
+        </form>
+        {% endif %}
+
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

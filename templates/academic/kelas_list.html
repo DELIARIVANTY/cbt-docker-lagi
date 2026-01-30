@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Kelas{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Data Kelas</h6>
+        {% if user.role == 'admin' %}
+        <a href="{% url 'kelas_create' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Tambah Kelas</a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Tingkat</th>
+                        <th>Nama Kelas</th>
+                        <th>Jurusan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kelas in kelas_list %}
+                    <tr>
+                        <td>{{ kelas.tingkat }}</td>
+                        <td>{{ kelas.nama }}</td>
+                        <td>{{ kelas.jurusan.kode }}</td>
+                        <td>
+                            <a href="{% url 'cetak_kartu_kelas' kelas.pk %}" class="btn btn-info btn-sm"
+                                title="Cetak Kartu Peserta" target="_blank">
+                                <i class="fas fa-print"></i>
+                            </a>
+                            {% if user.role == 'admin' %}
+                            <a href="{% url 'kelas_edit' kelas.pk %}" class="btn btn-warning btn-sm"><i
+                                    class="fas fa-edit"></i></a>
+                            <a href="{% url 'kelas_delete' kelas.pk %}" class="btn btn-danger btn-sm"><i
+                                    class="fas fa-trash"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">Belum ada data kelas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-danger">Konfirmasi Hapus</h6>
+            </div>
+            <div class="card-body">
+                <p>Apakah Anda yakin ingin menghapus penugasan pengawas untuk:</p>
+                <ul>
+                    <li><strong>Ujian:</strong> {{ object.ujian.nama_ujian }}</li>
+                    <li><strong>Kelas:</strong> {{ object.kelas.nama }}</li>
+                    <li><strong>Pengawas:</strong> {{ object.proktor.nama }}</li>
+                </ul>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                    <a href="{% url 'jadwal_pengawas_list' %}" class="btn btn-secondary">Batal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

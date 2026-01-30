@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Form {{ role_label }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{% if target_user %}Edit{% else %}Tambah{% endif %} {{
+                    role_label }}</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        {{ form.username }}
+                        <div class="text-danger small">{{ form.username.errors.0 }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nama Lengkap</label>
+                        {{ form.nama }}
+                        <div class="text-danger small">{{ form.nama.errors.0 }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        {{ form.password }}
+                        {% if target_user %}<small class="form-hint">Kosongkan jika tidak ingin mengubah
+                            password</small>{% endif %}
+                        <div class="text-danger small">{{ form.password.errors.0 }}</div>
+                    </div>
+
+                    {% if role == 'siswa' %}
+                    <div class="mb-3">
+                        <label class="form-label">NISN</label>
+                        {{ form.nisn }}
+                        <div class="text-danger small">{{ form.nisn.errors.0 }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kelas</label>
+                        {{ form.kelas }}
+                        <div class="text-danger small">{{ form.kelas.errors.0 }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if role == 'guru' %}
+                    <div class="mb-3">
+                        <label class="form-label">Ampu Mata Pelajaran</label>
+                        {{ form.ampu_mapel }}
+                        <small class="form-hint">Tahan CTRL untuk memilih lebih dari satu.</small>
+                        <div class="text-danger small">{{ form.ampu_mapel.errors.0 }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <a href="{% url 'user_list' role %}" class="btn btn-secondary">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

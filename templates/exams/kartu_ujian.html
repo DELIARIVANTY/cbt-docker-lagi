@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartu Hasil Ujian - {{ sesi.siswa.nama }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            padding: 20px;
+        }
+
+        .card {
+            border: 1px solid #000;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px double #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+        }
+
+        .content table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .content td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .score-box {
+            border: 2px solid #000;
+            padding: 10px;
+            text-align: center;
+            width: 100px;
+            margin-left: auto;
+        }
+
+        .score-box h1 {
+            margin: 0;
+            font-size: 48px;
+        }
+
+        .score-box span {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature {
+            text-align: center;
+            width: 200px;
+        }
+
+        .signature .line {
+            margin-top: 60px;
+            border-bottom: 1px solid #000;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button onclick="window.print()" class="no-print"
+        style="margin-bottom: 20px; padding: 10px 20px; cursor: pointer;">Cetak Kartu</button>
+
+    <div class="card">
+        <div class="header">
+            <h2>KARTU HASIL UJIAN</h2>
+            <p>SMAN 1 KRAGILAN - TAHUN AJARAN 2025/2026</p>
+        </div>
+
+        <div class="content">
+            <table>
+                <tr>
+                    <td width="150"><strong>Nama Siswa</strong></td>
+                    <td width="10">:</td>
+                    <td>{{ nama_siswa }}</td>
+
+                    <td rowspan="4" width="150" style="vertical-align: middle;">
+                        <div class="score-box">
+                            <span>Nilai Akhir</span>
+                            <h1>{{ sesi.nilai|floatformat:0 }}</h1>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Nomor Induk</strong></td>
+                    <td>:</td>
+                    <td>{{ nomor_induk }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Kelas</strong></td>
+                    <td>:</td>
+                    <td>{{ sesi.siswa.kelas.nama }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Mata Pelajaran</strong></td>
+                    <td>:</td>
+                    <td>{{ sesi.ujian.bank_soal.mapel.nama }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Nama Ujian</strong></td>
+                    <td>:</td>
+                    <td colspan="2">{{ sesi.ujian.nama_ujian }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Waktu Ujian</strong></td>
+                    <td>:</td>
+                    <td colspan="2">{{ sesi.waktu_mulai|date:"d F Y, H:i" }} WIB</td>
+                </tr>
+            </table>
+
+            <p><strong>Detail Pengerjaan:</strong></p>
+            <table border="1" style="border-collapse: collapse; text-align: center;">
+                <tr style="background:#f0f0f0;">
+                    <td>Soal Dijawab</td>
+                    <td>Jawaban Benar</td>
+                    <td>Jawaban Salah</td>
+                    <td>Status</td>
+                </tr>
+                <tr>
+                    <td>{{ total_dijawab }}</td>
+                    <td>{{ total_benar }}</td>
+                    <td>{{ total_salah }}</td>
+                    <td>
+                        {% if sesi.is_finished %}SELESAI{% else %}BELUM SELESAI{% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div class="signature">
+                <p>Mengetahui,<br>Orang Tua/Wali</p>
+                <div class="line"></div>
+            </div>
+            <div class="signature">
+                <p>Serang, {% now "d F Y" %}<br>Guru Mata Pelajaran</p>
+                <div class="line"></div>
+                <p>{{ sesi.ujian.bank_soal.guru.nama|default:"Guru Pengampu" }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

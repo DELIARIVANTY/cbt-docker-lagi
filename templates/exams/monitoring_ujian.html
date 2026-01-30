@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="m-0 font-weight-bold text-primary">Monitoring Ujian: {{ ujian.nama_ujian }}</h6>
+            <small class="text-muted">Token: {{ ujian.token }} | Durasi: {{ ujian.durasi }} Menit</small>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge badge-success mr-2" id="connection-status">
+                <i class="fas fa-dot-circle"></i> Connected
+            </span>
+            <button class="btn btn-sm btn-primary" onclick="window.location.reload()">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="monitoringTable" width="100%" cellspacing="0">
+                <thead class="thead-light">
+                    <tr>
+                        <th width="5%">No</th>
+                        <th>Nama Peserta</th>
+                        <th width="20%">Status</th>
+                        <th width="15%">Sisa Waktu</th>
+                        <th width="10%">Nilai (Temp)</th>
+                        <th width="10%">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="monitoring-body">
+                    {% for sesi in active_sessions %}
+                    <tr id="row-{{ sesi.id }}" data-sesi-id="{{ sesi.id }}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="font-weight-bold">{{ sesi.siswa.username }}</div>
+                            <small class="text-muted">{{ sesi.siswa.nama }}</small>
+                        </td>
+                        <td>
+                            {% if sesi.is_finished %}
+                            <span class="badge badge-success">Selesai</span>
+                            {% else %}
+                            <span class="badge badge-warning">Mengerjakan</span>
+                            {% if sesi.device_id %}
+                            <span class="badge badge-info"><i class="fas fa-mobile-alt"></i> Locked</span>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not sesi.is_finished %}
+                            <div class="progress progress-sm mb-1">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 50%"
+                                    id="progress-{{ sesi.id }}"></div>
+                            </div>
+                            <small id="timer-{{ sesi.id }}">{{ sesi.sisa_waktu }}s</small>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ sesi.nilai }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'force_finish_exam' sesi.id %}" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Paksa selesai siswa ini?')" title="Force Finish">
+                                    <i class="fas fa-stop-circle"></i>
+                                </a>
+                                <a href="{% url 'reset_login' sesi.id %}" class="btn btn-warning btn-sm"
+                                    onclick="return confirm('Reset login siswa ini?')" title="Reset Login">
+                                    <i class="fas fa-unlock-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="empty-row">
+                        <td colspan="6" class="text-center">Belum ada peserta yang memulai ujian.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ujianId = "{{ ujian.id }}";
+    const pollInterval = 10000; // 10 seconds refresh
+
+    function updateStatus() {
+        fetch(window.location.href + '?ajax=1')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('monitoring-body');
+                if (data.sessions.length === 0) return;
+
+                // Clear empty row if exists
+                const emptyRow = document.getElementById('empty-row');
+                if (emptyRow && data.sessions.length > 0) emptyRow.remove();
+
+                data.sessions.forEach((sesi, index) => {
+                    let row = document.getElementById('row-' + sesi.id);
+
+                    // Construct HTML for row
+                    const rowHtml = `
+                            <td>${index + 1}</td>
+                            <td>
+                                <div class="font-weight-bold">${sesi.username}</div>
+                                <small class="text-muted">${sesi.nama}</small>
+                            </td>
+                            <td>
+                                ${sesi.is_finished ?
+                            '<span class="badge badge-success">Selesai</span>' :
+                            '<span class="badge badge-warning">Mengerjakan</span>' +
+                            (sesi.device_id ? ' <span class="badge badge-info"><i class="fas fa-mobile-alt"></i> Locked</span>' : '')}
+                            </td>
+                            <td>
+                                ${!sesi.is_finished ?
+                            `<div class="progress progress-sm mb-1">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: ${sesi.progress_percent}%"></div>
+                                    </div>
+                                    <small>${sesi.sisa_waktu_str}</small>` : '-'}
+                            </td>
+                            <td>${sesi.nilai}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="/exams/force-finish/${sesi.id}/" class="btn btn-danger btn-sm" onclick="return confirm('Paksa selesai?')"><i class="fas fa-stop-circle"></i></a>
+                                    <a href="/exams/reset-login/${sesi.id}/" class="btn btn-warning btn-sm" onclick="return confirm('Reset login?')"><i class="fas fa-unlock-alt"></i></a>
+                                </div>
+                            </td>
+                        `;
+
+                    if (row) {
+                        row.innerHTML = rowHtml;
+                    } else {
+                        const newRow = document.createElement('tr');
+                        newRow.id = 'row-' + sesi.id;
+                        newRow.innerHTML = rowHtml;
+                        tbody.appendChild(newRow);
+                    }
+                });
+
+                document.getElementById('connection-status').className = 'badge badge-success mr-2';
+                document.getElementById('connection-status').innerHTML = '<i class="fas fa-dot-circle"></i> Connected';
+            })
+            .catch(err => {
+                console.error('Monitoring Error:', err);
+                document.getElementById('connection-status').className = 'badge badge-danger mr-2';
+                document.getElementById('connection-status').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Disconnected';
+            });
+    }
+
+    setInterval(updateStatus, pollInterval);
+
+</script>
+{% endblock %}

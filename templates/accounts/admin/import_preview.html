@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Preview Import{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Preview Import {{ role|title }}</h2>
+</div>
+
+<!-- Errors Section -->
+{% if errors %}
+<div class="card mb-3 border-danger">
+    <div class="card-header bg-danger text-white">
+        <h4 class="card-title text-white mb-0">Terdeteksi Error ({{ errors|length }})</h4>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            {% for error in errors %}
+            <li class="list-group-item text-danger">{{ error }}</li>
+            {% endfor %}
+        </ul>
+        <div class="mt-3">
+            <p class="text-danger fw-bold">Silakan perbaiki file Excel Anda dan upload ulang.</p>
+            <a href="{% url 'user_import' role %}" class="btn btn-secondary">Upload Ulang</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Valid Data Section -->
+{% if valid_data %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Data Siap Import ({{ valid_data|length }})</h3>
+        {% if not errors %}
+        <div class="card-actions">
+
+        </div>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter table-mobile-md card-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Nama</th>
+                    <th>Password</th>
+                    {% if role == 'siswa' %}
+                    <th>NISN</th>
+                    <th>Kelas</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in valid_data %}
+                <tr>
+                    <td>{{ item.username }}</td>
+                    <td>{{ item.nama }}</td>
+                    <td class="text-muted">{{ item.password }}</td>
+                    {% if role == 'siswa' %}
+                    <td>{{ item.extra.nisn }}</td>
+                    <td><span class="badge bg-blue">{{ item.extra.kelas.nama }}</span></td>
+                    <!-- Obj might fail serialization in session? -->
+                    <!-- Wait, item['extra']['kelas'] is an Object. Session storage mimics JSON. It will FAIL to store Django model object directly in session unless serialized. -->
+                    <!-- FIX: In service.py, store kelas_id or kelas_name string in valid_data, not object. FETCH object during save. -->
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if not errors %}
+    <div class="card-footer text-end">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="confirm" value="1">
+            <a href="{% url 'user_import' role %}" class="btn btn-secondary me-2">Batal</a>
+            <button type="submit" class="btn btn-success">Proses Import</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

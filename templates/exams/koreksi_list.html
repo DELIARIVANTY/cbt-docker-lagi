@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Koreksi Essay{% endblock %}
+
+{% block content %}
+<div class="row g-2 align-items-center mb-4">
+    <div class="col">
+        <h2 class="page-title">
+            Daftar Periksa Jawaban (Essay)
+        </h2>
+        <div class="text-muted mt-1">Daftar siswa yang telah menyelesaikan ujian dengan soal Essay dan menunggu
+            penilaian manual.</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-striped">
+            <thead>
+                <tr>
+                    <th>Siswa</th>
+                    <th>Nama Ujian</th>
+                    <th>Waktu Selesai</th>
+                    <th>Status</th>
+                    <th class="w-1"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sesi in sesi_list %}
+                <tr>
+                    <td>
+                        <div class="d-flex py-1 align-items-center">
+                            <span class="avatar me-2"
+                                style="background-image: url('https://ui-avatars.com/api/?name={{ sesi.siswa.nama|urlencode }}&background=random');"></span>
+                            <div class="flex-fill">
+                                <div class="font-weight-medium">{{ sesi.siswa.nama }}</div>
+                                <div class="text-muted"><a href="#" class="text-reset">{{ sesi.siswa.username }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="font-weight-medium">{{ sesi.ujian.nama_ujian }}</div>
+                        <div class="text-muted small">Token: {{ sesi.ujian.token }}</div>
+                    </td>
+                    <td>{{ sesi.waktu_selesai|date:"d M Y, H:i" }}</td>
+                    <td>
+                        <span class="badge bg-yellow text-yellow-fg">Menunggu Koreksi</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'koreksi_detail' sesi.id %}" class="btn btn-primary btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-ballpen"
+                                width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M14 6l7 7l-4 4" />
+                                <path
+                                    d="M5.828 15.828a2 2 0 0 0 -.586 1.414v2.828h2.828a2 2 0 0 0 1.414 -.586l9.243 -9.243a2 2 0 0 0 0 -2.828l-2.828 -2.828a2 2 0 0 0 -2.828 0l-9.243 9.243" />
+                                <path d="M4 20l1.768 -1.768" />
+                            </svg>
+                            Periksa
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty">
+                            <div class="empty-img"><img
+                                    src="https://tabler.io/img/svg/illustrations/undraw_printing_invoices_5r4r.svg"
+                                    height="128" alt="">
+                            </div>
+                            <p class="empty-title">Tidak ada antrian koreksi</p>
+                            <p class="empty-subtitle text-secondary">
+                                Semua jawaban essay telah selesai diperiksa. Kerja bagus!
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
